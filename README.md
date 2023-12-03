@@ -1,2 +1,2 @@
-# GestorLibros
-Proyecto final Estructuras de datos 1 gestor de libros
+# Gestor de Libros
+Proyecto final Estructuras de datos 1
