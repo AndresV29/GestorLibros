@@ -5,7 +5,8 @@
 using namespace std;
 
 struct Libro{
-    string titulo, autor, disponible;
+    string titulo, autor;
+    bool disponible;
     int atraso;
     Libro* sig;
 };
@@ -15,15 +16,33 @@ struct Usuario {
     string contrasenia;
     int id;
     Usuario* siguiente;
-    vector<Libro*>librosPrestados;
+   // vector<Libro*>librosPrestados;
 };
 struct Prestamo{
-    Usuario *usuario;
-    Libro *libro;
-    //hacerlo con numeros porque time cuenta que tiempo si pase.
-    int fechaPrestamo;
+    string nomUsuario;
+    string libro;
+    int diasPrestado;
+    Prestamo* siguiente;
 
 };
+
+void agregarUsuarios(Usuario*& cabeza, string nombre, string contrasenia, int id);
+void agregarLibro(Libro*& cabeza, string nomAutor, string nomLibro);
+void agregarPrestamo(Prestamo*& cabeza, string nombreLibro, string nombreUsuario);
+
+
+
+void insertaDatosPruebas(Usuario *&usuario,Libro *&libro){
+    agregarUsuarios(usuario, "Mario", "1111", 1);
+    agregarUsuarios(usuario, "Peach", "2222", 2);
+    agregarUsuarios(usuario, "Bowser", "3333", 3);
+    agregarUsuarios(usuario, "Wario", "4444", 4);
+    agregarUsuarios(usuario, "Luigi", "5555", 5);
+
+    agregarLibro(libro, "Jean", "El_principito");
+    agregarLibro(libro, "Bran", "Dracula");
+    agregarLibro(libro, "Gabriel Garcia", "100_annos_de_soledad");
+}
 
 //Menus
 void mostrarMenuPrincipal(){
@@ -40,8 +59,7 @@ void mostrarMenuLibros() {
     cout << "1. Agregar un libro" << endl;
     cout << "2. Mostrar todos los libros"<< endl;
     cout << "3. Buscar libros" << endl;
-    cout << "4. Devolver Libro" << endl;
-    cout << "5. Volver al menu principal" << endl;;
+    cout << "4. Volver al menu principal" << endl;;
     cout << "Ingrese una opcion: ";
 }
 void MostrarMenuUsuarios() {
@@ -52,54 +70,150 @@ void MostrarMenuUsuarios() {
     cout << "Ingrese una opcion: ";
 }
 void mostrarMenuPrestamos(){
-    cout<<"Menu gestion de prestamos"<< endl;
+    cout<<"Menu Gestion de Prestamos"<< endl;
     cout<<"1. Prestar un libro"<< endl;
-    cout<<"2. Mostrar los prestamos"<<endl;
-    cout<<"3.Calcular multa" << endl;
+    cout<<"2. Mostrar prestamos actuales"<<endl;
+    cout<<"3. Devolver Libro" << endl;
     cout<<"4. Volver a menu principal"<<endl;
-    cout<<"5.Ingrese una opcion: "<<endl;
+    cout<<"Ingrese una opcion: "<<endl;
 }
 
 //Libros
-void prestarLibro(Usuario*usuario,Libro*libro){
-    double dias = 10;
-    if(libro){
-        cout<<"Libro no  se encuentra disponible"<<endl;
+void prestarLibro(Prestamo *& miPrestamo, Usuario *usuario,Libro *libro,string libroB, string usuarioB){
+    // lista users, libreria, lista prestamos, strings a buscar
+    int dias = 10;
+    //auto *miPrestamo = new Prestamo;
+    bool siLibro, siUsuario = false;
+
+    if (usuario == nullptr ){
+        cout << "No existen usuarios" << endl;
         return;
     }
-    for(Libro*prestado:usuario->librosPrestados){
-        if(prestado==libro){
-            cout<<"Libro prestado de manera exitosa"<<endl;
-            return;
+    if (libro== nullptr){
+        cout << "No existen libros" << endl;
+        return;
+    }
+    do{
+        if(libro->titulo == libroB){
+            siLibro = true;
+            libro->disponible = false;
+            break;
+        } else{
+            libro = libro->sig;
         }
+    }while(libro != nullptr);
+
+    do{
+        if(usuario->nombre == usuarioB){
+            siUsuario = true;
+            break;
+        } else{
+            usuario = usuario->siguiente;
+        }
+    }while(usuario!= nullptr);
+    if (siLibro && siUsuario) {
+        agregarPrestamo(miPrestamo, libroB, usuarioB);
+        //llamar insertar prestamo
+
     }
-    libro->disponible=false;
-    usuario->librosPrestados.push_back(libro);
-    //time_t now=time(nullptr);
-    Prestamo Prestamo;
-    Prestamo.usuario=usuario;
-    Prestamo.libro=libro;
-    //Prestamo.fechaPrestamo=now;
-    Prestamo.fechaPrestamo = dias;
-    cout<<"Libro prestado!"<<endl;
 }
-void calcularMulta(const Prestamo& Prestamo){
-   // time_t now= time(nullptr);
-    //double diasAtraso=difftime(now, Prestamo.fechaPrestamo)/(60*60*24);
-    double dias = Prestamo.fechaPrestamo;
-    double atraso = 0;
-    cout << "Ingrese la cantidad de dias de atraso: ";
-    cin >> atraso;
-    if (atraso>1)
-    {
-        double multa=(atraso-2)*20.2;
-        cout<<"La multa es de  ₡"<<multa<<"por retraso en devolver el libro"<<endl;
+void mostrarPrestamos(Prestamo *cabeza){
+    Prestamo* tmp = cabeza;
+
+    if(cabeza == nullptr){
+            cout << "No hay prestamos activos actualmente." << endl;
+            return;
     }else{
-        cout<<"Libro devuelto a tiempo, no se le cobra una multa."<<endl;
+            cout << "Lista de Prestamos:" << endl;
+            while (tmp != nullptr) {
+                cout << "Persona: " << tmp->nomUsuario<< ", Titulo: " << tmp->libro << endl;
+                tmp = tmp->siguiente;
+            }
+            cout << endl;
+        }
+
+}
+void devolverLibro(Libro* cabeza, string libroB, Prestamo *&prestamo){
+    Libro* actual = cabeza;
+    Prestamo *temp = prestamo;
+    Prestamo *anterior = temp;
+    int diasAtraso = 0;
+    double multa=(diasAtraso)*20.2;
+    //Validacion que existan libros en el sistema
+    if (cabeza == nullptr) {
+        cout << "No hay libros registrados en el sistema" << endl;
+        return;
+    }
+    //Validacion de disponbilidad en el sistema
+//    if (actual->disponible == true) {
+//        cout << "Libro " << libroB << " actualmente no esta prestado." << endl;
+//        return;
+//    }
+
+
+//busqueda del libro en la lista de libros
+    while(actual!= nullptr){
+        if(actual->titulo == libroB){
+            if(actual->disponible == true){
+                cout << "El libro no ha sido prestado";
+                return;
+            }
+            break;
+        }
+        actual = actual->sig;
+    }
+
+    //busqueda del libro en lista de prestamos
+    while(temp != nullptr){
+        if(temp->libro == libroB){
+            break;
+        }
+        anterior = temp;
+        temp = temp->siguiente;
+    }
+    
+    //verifica si libro fue encontrado en lista de libros, sino nos vamos
+    if(actual == nullptr){
+        cout << "libro no encotrado!" << endl;
+        return;
+    }
+    
+    //verificamos si el libro fue encontrado en lista de prestamos, sino nos vamos
+    if(temp == nullptr){
+        cout << "libro no ha sido prestado" << endl;
+        return;
+    }
+
+    //despues de todas las verificaciones, se libera el libro
+    //se aplica la multa y finalmente se borra de prestamos
+    actual->disponible = true;
+    cout << "Libro devuelto y prestamo anulado" << endl;
+    //Calcula multa por atraso.
+    cout << "Ingrese la cantidad de atraso que tiene el libro de atrasado: " << endl;
+    cin >> diasAtraso;
+    actual->atraso = diasAtraso;
+    if (diasAtraso > 0) {
+        cout << "Se le ha aplicado una multa de $"<< multa << endl;
+        //Simular el pago de la multa
+        cout << "Multa ha sido cancelada, gracias por su comprension." << endl;
+    }else{
+        cout << "No se le ha aplicado una multa." << endl;
+    }
+    //El proceso de borrado verifica si el elemento a borrar
+    //corresponde al unico prestamo de la lista, si es asi 
+    //se le vuelve a asignar el nullptr para evitar errores de 
+    //verifiacion posteriores 
+    anterior->siguiente = temp->siguiente;
+    if(temp == prestamo){
+        delete temp;
+        prestamo = nullptr;
+    }else{
+        delete temp;
     }
 
 }
 
+//libros
 void agregarLibro(Libro*& cabeza, string nomAutor, string nomLibro){
     Libro* nuevo = new Libro;
     nuevo->autor = nomAutor;
@@ -109,30 +223,7 @@ void agregarLibro(Libro*& cabeza, string nomAutor, string nomLibro){
     cabeza = nuevo;
     cout << "Se agrego con exito el libro."<< endl;
 }
-void devolverLibro(Libro* cabeza, string libroB){
-    Libro* actual = cabeza;
-    bool found = false;
-    string estado = "disponible";
-    int diasAtraso;
 
-    while (actual) {
-        if (actual->titulo == libroB) {
-            cout<< "Libro Encontrado!" << endl;
-            actual->disponible = estado;
-            cout << "Libro devuelto" << endl;
-            cout << "Ingrese la cantidad de atraso que tiene el libro de atrasado: " << endl;
-            cin >> diasAtraso;
-            actual->atraso = diasAtraso;
-            if (diasAtraso > 0) cout << "Se le ha aplicado una multa de 10$ por cada dia de atraso";
-            found = true;
-        }
-        actual = actual->sig;
-    }
-
-    if (!found) {
-        cout << "Libro " << libroB << " actualmente no esta prestado." << endl;
-    }
-}
 
 void mostrarLibros(Libro* cabeza){
     if(cabeza == nullptr){
@@ -153,7 +244,7 @@ void mostrarLibros(Libro* cabeza){
 
 void buscarLibros(Libro* cabeza, const string& infoLibro){
     if (cabeza == nullptr){
-        cout << "No se encontro el libro." << endl;
+        cout << "El libro solicitado no se encuentra registrado en el sistema." << endl;
         return;
     }
     else{
@@ -178,7 +269,16 @@ void agregarUsuarios(Usuario*& cabeza, string nombre, string contrasenia, int id
 
     nuevo_usuario->siguiente = cabeza;
     cabeza = nuevo_usuario;
+}
 
+void agregarPrestamo(Prestamo*& cabeza, string nombreLibro, string nombreUsuario){
+    Prestamo* nuevoPrestamo = new Prestamo;
+    nuevoPrestamo->libro = nombreLibro;
+    nuevoPrestamo->nomUsuario = nombreUsuario;
+    nuevoPrestamo->diasPrestado = 1;
+
+    nuevoPrestamo->siguiente = cabeza;
+    cabeza = nuevoPrestamo;
 }
 
 void mostrarUsuarios(Usuario* cabeza) {
@@ -190,7 +290,7 @@ void mostrarUsuarios(Usuario* cabeza) {
         Usuario* actual = cabeza;
         cout << "Lista de Usuarios:" << endl;
         while (actual != nullptr) {
-            cout << "ID: " << actual->id << ", Nombre: " << actual->nombre << endl;
+            cout << "Cedula: " << actual->id << ", Nombre: " << actual->nombre << endl;
             actual = actual->siguiente;
         }
         cout << endl;
@@ -202,7 +302,7 @@ int main() {
     Usuario* listaUsuarios = nullptr;
     Libro* libreria = nullptr;
     string nombre, contrasenia, autor, titulo, infoLibro;
-    Prestamo *prestamos;
+    Prestamo *prestamos = nullptr;
     int opcionMenuPrincipal, OpcionMenuUsuarios, OpcionMenuLibros, id,opcionMenuPrestamos;
     bool salirMenuPrincipal = false;
     bool salirMenuLibros = false;
@@ -211,6 +311,7 @@ int main() {
     //variable para salir del menu prestamos
     bool regresar = false;
 
+    insertaDatosPruebas(listaUsuarios, libreria);
 
     do {
         //Menu principal
@@ -242,15 +343,10 @@ int main() {
                             buscarLibros(libreria, infoLibro);
                             break;
                         case 4:
-                            cout << "Ingrese el titulo del libro: ";
-                            cin >> titulo;
-                            devolverLibro(libreria, titulo);
-                            break;
-                        case 5:
                             salirMenuLibros = true;
                             break;
                         default:
-                            cout << "Ingrese opciones válidas del 1 al 3"<<endl;
+                            cout << "Ingrese un numero del 1 al 4"<<endl;
                     }
                 } while (!salirMenuLibros);
                 break;
@@ -266,12 +362,12 @@ int main() {
                         case 1:
                             cout << "Nombre del usuario: ";
                             cin >> nombre;
-                            cout << "Contraseña: ";
+                            cout << "Contrasenna: ";
                             cin >> contrasenia;
                             cout << "ID del usuario: ";
                             cin >> id;
                             agregarUsuarios(listaUsuarios, nombre, contrasenia, id);
-                            cout << "Usuario agregado con éxito." << endl;
+                            cout << "Usuario agregado con exito." << endl;
                             break;
                         case 2:
                             mostrarUsuarios(listaUsuarios);
@@ -288,21 +384,30 @@ int main() {
             case 3:
                 do{
                     //Menu de prestamos
-                    mostrarMenuPrestamos();cin>>opcionMenuPrestamos;
+                    mostrarMenuPrestamos();
+                    cin>>opcionMenuPrestamos;
                     switch (opcionMenuPrestamos)
                     {
                         case 1:
-                            prestarLibro(listaUsuarios,libreria);
+                            //Crear prestamo libro
+                            cout << "Ingrese el titulo del libro: ";
+                            cin >> titulo;
+                            cout << "Ingrese el nombre del usuario: ";
+                            cin >> nombre;
+                            prestarLibro(prestamos, listaUsuarios,libreria, titulo, nombre);
                             break;
                         case 2:
                             //Mostrar prestamos
-
+                            mostrarPrestamos(prestamos);
                             break;
                         case 3:
-                            //calcularMulta();
+                            //Devolver y calcular la multa
+                            cout << "Ingrese el titulo del libro: ";
+                            cin >> titulo;
+                            devolverLibro(libreria, titulo, prestamos);
                             break;
                         case 4:
-                            //Regresar menu principal
+                            //Salir al menu principal
                             regresar = true;
                             break;
                         default:
@@ -316,7 +421,7 @@ int main() {
                 salirMenuPrincipal = true;
                 break;
             default:
-                cout << "Ingrese opciones validas del 1 al 3\n";
+                cout << "Ingrese opciones validas del 1 al 3" << endl;
                 break;
         };
     } while (!salirMenuPrincipal);
